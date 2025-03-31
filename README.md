@@ -1,46 +1,155 @@
-# Getting Started with Create React App
+# Solana Token Manager 🪙
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+![Solana](https://img.shields.io/badge/Solana-3E5EBC?style=for-the-badge&logo=solana&logoColor=white)
+![React](https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)
+![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)
 
-## Available Scripts
+A full-stack dApp for creating, minting, and transferring SPL tokens on the Solana blockchain with Phantom wallet integration.
 
-In the project directory, you can run:
+## 🌟 Features
+- **Wallet Integration**: Connect Phantom/Solflare wallets
+- **Token Operations**:
+  - Create new SPL tokens
+  - Mint tokens (fixed supply)
+  - Transfer tokens between wallets
+- **Real-time Tracking**:
+  - SOL and token balances
+  - Transaction history with Solana Explorer links
+- **Responsive UI**: Mobile-friendly interface
 
-### `npm start`
+## 💁️ Project Structure
+```
+solana-token-app/
+├── public/               # Static assets
+├── src/
+│   ├── components/       # React components
+│   │   └── WalletConnection.tsx  # Main interaction logic
+│   ├── contexts/         # Wallet provider
+│   │   └── WalletContext.tsx
+│   ├── App.tsx           # Root component
+│   ├── index.tsx         # Entry point
+│   ├── index.css         # Global styles
+├── config-overrides.js   # Webpack polyfill config
+├── package.json         # Dependencies
+└── tsconfig.json        # TypeScript config
+```
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+## 🚀 Quick Start
 
-The page will reload if you make edits.\
-You will also see any lint errors in the console.
+### Prerequisites
+- Node.js v16+
+- Yarn/npm
+- Phantom Wallet (Browser Extension)
 
-### `npm test`
+### Installation
+```bash
+git clone https://github.com/yourusername/solana-token-app.git
+cd solana-token-app
+npm install
+```
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+### Running Locally
+```bash
+npm start  # Starts dev server on http://localhost:3000
+```
 
-### `npm run build`
+### Building for Production
+```bash
+npm run build
+```
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+## 🛠 Key Configuration Files
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+### config-overrides.js
+Handles polyfills for Solana web3.js:
+```javascript
+module.exports = function override(config) {
+  config.resolve.fallback = {
+    "crypto": require.resolve("crypto-browserify"),
+    "stream": require.resolve("stream-browserify")
+  };
+  return config;
+}
+```
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+### WalletContext.tsx
+Wallet connection provider:
+```typescript
+import { ConnectionProvider, WalletProvider } from '@solana/wallet-adapter-react';
+import { PhantomWalletAdapter } from '@solana/wallet-adapter-wallets';
 
-### `npm run eject`
+export const WalletContext = ({ children }) => {
+  const endpoint = useMemo(() => clusterApiUrl('devnet'), []);
+  const wallets = useMemo(() => [new PhantomWalletAdapter()], []);
+  
+  return (
+    <ConnectionProvider endpoint={endpoint}>
+      <WalletProvider wallets={wallets} autoConnect>
+        {children}
+      </WalletProvider>
+    </ConnectionProvider>
+  );
+};
+```
 
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
+## 💊 Core Functionality
 
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+### Token Creation
+```typescript
+const createToken = async () => {
+  const mintKeypair = Keypair.generate();
+  const lamports = await getMinimumBalanceForRentExemptMint(connection);
+  
+  const transaction = new Transaction().add(
+    SystemProgram.createAccount({...}),
+    createInitializeMintInstruction(...)
+  );
+  
+  transaction.recentBlockhash = (await connection.getLatestBlockhash()).blockhash;
+  transaction.feePayer = publicKey;
+};
+```
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
+### Token Transfer
+```typescript
+const transferTokens = async () => {
+  const transaction = new Transaction().add(
+    createTransferInstruction(
+      sourceAccount,
+      destAccount,
+      publicKey,
+      amount,
+      [],
+      TOKEN_PROGRAM_ID
+    )
+  );
+  
+  transaction.recentBlockhash = (await connection.getLatestBlockhash()).blockhash;
+  transaction.feePayer = publicKey;
+};
+```
 
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
+## 🔧 Troubleshooting
 
-## Learn More
+| Error                          | Solution |
+|--------------------------------|----------|
+| Transaction recentBlockhash required | Ensure every transaction sets recentBlockhash and feePayer |
+| WalletNotConnectedError        | Wrap wallet calls in `if (publicKey && signTransaction)` |
+| Failed to fetch token balance  | Verify token account exists with `getAccount()` |
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+## 🌐 Deployment
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+### Deploy with Vercel
+```bash
+npm install -g vercel
+vercel
+```
+
+## 📚 Learning Resources
+- [Solana Cookbook](https://solanacookbook.com/)
+- [SPL Token Docs](https://spl.solana.com/)
+- [Wallet Adapter Docs](https://github.com/solana-labs/wallet-adapter)
+
+## 📝 License
+MIT © 2025 [Your Name]
+
