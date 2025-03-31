@@ -144,7 +144,7 @@ const transferTokens = async () => {
 npm install -g vercel
 vercel
 ```
-
+Here is the link where you check it out my live demo: https://vercel.com/hanitha-ganisettis-projects/solana-token-app/3RPUo7hfMYthQeusbUVGZt4XVZWK
 ## 📚 Learning Resources
 - [Solana Cookbook](https://solanacookbook.com/)
 - [SPL Token Docs](https://spl.solana.com/)
