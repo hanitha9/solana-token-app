@@ -78,7 +78,6 @@ export const WalletConnection: React.FC = () => {
       const mintKeypair = Keypair.generate();
       const lamports = await getMinimumBalanceForRentExemptMint(connection);
 
-      // Get fresh blockhash for token creation
       const { blockhash: recentBlockhash } = await connection.getLatestBlockhash();
 
       const transaction = new Transaction().add(
@@ -119,7 +118,6 @@ export const WalletConnection: React.FC = () => {
         publicKey
       );
 
-      // Get fresh blockhash for ATA creation
       const { blockhash: ataBlockhash } = await connection.getLatestBlockhash();
       const ataTransaction = new Transaction().add(
         createAssociatedTokenAccountInstruction(
@@ -173,7 +171,7 @@ export const WalletConnection: React.FC = () => {
           tokenMint,
           tokenAccount,
           publicKey,
-          1000000000 // Minting 1 token (with 9 decimals)
+          1000000000
         )
       );
 
@@ -310,135 +308,258 @@ export const WalletConnection: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 p-4">
-      <ToastContainer position="top-right" autoClose={5000} />
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 p-4">
+      <ToastContainer 
+        position="top-right"
+        autoClose={5000}
+        hideProgressBar={false}
+        newestOnTop
+        closeOnClick
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        toastStyle={{
+          borderRadius: '12px',
+          fontFamily: 'Inter, sans-serif'
+        }}
+      />
       
-      <div className="max-w-4xl mx-auto bg-white rounded-xl shadow-md overflow-hidden p-6">
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
-          <h1 className="text-2xl font-bold text-gray-800">Solana Token Manager</h1>
-          <div className="mt-4 md:mt-0">
-            <WalletMultiButton className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition-colors" />
+      <div className="min-h-[calc(100vh-2rem)] mx-auto bg-white/90 backdrop-blur-sm rounded-2xl shadow-xl overflow-hidden flex flex-col">
+        {/* Header with glass effect */}
+        <div className="bg-gradient-to-r from-blue-600 to-purple-600 p-6 text-white">
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-center">
+            <div>
+              <h1 className="text-3xl font-bold">Solana Token Manager</h1>
+              <p className="text-blue-100 mt-1">
+                Create, mint and manage your custom SPL tokens
+              </p>
+            </div>
+            <div className="mt-4 md:mt-0">
+              <WalletMultiButton 
+                className="!bg-white/10 hover:!bg-white/20 !text-white !font-medium !py-3 !px-6 !rounded-xl !transition-all"
+                style={{ backdropFilter: 'blur(10px)' }}
+              />
+            </div>
           </div>
         </div>
 
         {publicKey ? (
-          <>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-              <div className="bg-gray-50 p-4 rounded-lg">
-                <h2 className="text-lg font-semibold mb-4">Wallet Info</h2>
-                <p className="text-sm text-gray-600 mb-1">Address: <span className="font-mono break-all">{publicKey.toBase58()}</span></p>
-                <p className="text-sm text-gray-600">SOL Balance: <span className="font-medium">{solBalance.toFixed(6)} SOL</span></p>
-                
-                {tokenMint && (
-                  <div className="mt-3">
-                    <p className="text-sm text-gray-600">Token Mint: <span className="font-mono break-all">{tokenMint.toBase58()}</span></p>
-                    <p className="text-sm text-gray-600">Token Balance: <span className="font-medium">{tokenBalance.toFixed(6)}</span></p>
+          <div className="flex-1 p-6 space-y-6 overflow-auto">
+            {/* Wallet Info and Token Actions */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              {/* Wallet Info Card - Made taller */}
+              <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm h-full">
+                <h2 className="text-xl font-semibold mb-4 text-gray-800 flex items-center">
+                  <span className="w-3 h-3 bg-green-500 rounded-full mr-2"></span>
+                  Wallet Information
+                </h2>
+                <div className="space-y-3 h-[calc(100%-3rem)]">
+                  <div>
+                    <p className="text-sm text-gray-500">Wallet Address</p>
+                    <p className="font-mono text-sm break-all bg-gray-50 p-2 rounded mt-1">
+                      {publicKey.toBase58()}
+                    </p>
                   </div>
-                )}
-              </div>
-
-              <div className="bg-gray-50 p-4 rounded-lg">
-                <h2 className="text-lg font-semibold mb-4">Token Actions</h2>
-                <div className="space-y-3">
-                  <button
-                    onClick={createToken}
-                    disabled={isLoading}
-                    className="w-full bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded disabled:opacity-50"
-                  >
-                    {isLoading ? 'Processing...' : 'Create Token'}
-                  </button>
-                  
+                  <div className="flex justify-between items-center pt-2 border-t border-gray-100">
+                    <p className="text-sm text-gray-500">SOL Balance</p>
+                    <p className="font-medium">{solBalance.toFixed(6)} SOL</p>
+                  </div>
                   {tokenMint && (
-                    <button
-                      onClick={mintTokens}
-                      disabled={isLoading}
-                      className="w-full bg-purple-600 hover:bg-purple-700 text-white py-2 px-4 rounded disabled:opacity-50"
-                    >
-                      {isLoading ? 'Processing...' : 'Mint 1 Token'}
-                    </button>
+                    <>
+                      <div className="pt-2 border-t border-gray-100">
+                        <p className="text-sm text-gray-500">Token Mint</p>
+                        <p className="font-mono text-sm break-all bg-gray-50 p-2 rounded mt-1">
+                          {tokenMint.toBase58()}
+                        </p>
+                      </div>
+                      <div className="flex justify-between items-center pt-2 border-t border-gray-100">
+                        <p className="text-sm text-gray-500">Token Balance</p>
+                        <p className="font-medium">{tokenBalance.toFixed(6)}</p>
+                      </div>
+                    </>
                   )}
                 </div>
               </div>
-            </div>
 
-            {tokenMint && (
-              <div className="mb-8">
-                <h2 className="text-lg font-semibold mb-4">Transfer Tokens</h2>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div className="md:col-span-2">
-                    <input
-                      type="text"
-                      value={recipientAddress}
-                      onChange={(e) => setRecipientAddress(e.target.value)}
-                      placeholder="Recipient Wallet Address"
-                      className="w-full p-2 border rounded"
-                    />
-                  </div>
-                  <div className="flex gap-2">
-                    <input
-                      type="number"
-                      value={transferAmount}
-                      onChange={(e) => setTransferAmount(e.target.value)}
-                      placeholder="Amount"
-                      min="0"
-                      step="0.000000001"
-                      className="flex-1 p-2 border rounded"
-                    />
+              {/* Token Actions Card - Made taller */}
+              <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm h-full">
+                <h2 className="text-xl font-semibold mb-4 text-gray-800 flex items-center">
+                  <span className="w-3 h-3 bg-blue-500 rounded-full mr-2"></span>
+                  Token Actions
+                </h2>
+                <div className="space-y-4 h-[calc(100%-3rem)] flex flex-col justify-between">
+                  <div className="space-y-4">
                     <button
-                      onClick={transferTokens}
-                      disabled={isLoading || !transferAmount || !recipientAddress}
-                      className="bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded disabled:opacity-50"
+                      onClick={createToken}
+                      disabled={isLoading}
+                      className={`w-full py-3 px-4 rounded-xl font-medium transition-all flex items-center justify-center ${
+                        isLoading
+                          ? 'bg-gray-300 text-gray-600'
+                          : 'bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white shadow-md hover:shadow-lg'
+                      }`}
                     >
-                      {isLoading ? 'Sending...' : 'Send'}
+                      {isLoading ? (
+                        <>
+                          <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                          </svg>
+                          Processing...
+                        </>
+                      ) : (
+                        'Create New Token'
+                      )}
                     </button>
+                    
+                    {tokenMint && (
+                      <button
+                        onClick={mintTokens}
+                        disabled={isLoading}
+                        className={`w-full py-3 px-4 rounded-xl font-medium transition-all flex items-center justify-center ${
+                          isLoading
+                            ? 'bg-gray-300 text-gray-600'
+                            : 'bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white shadow-md hover:shadow-lg'
+                        }`}
+                      >
+                        {isLoading ? (
+                          <>
+                            <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                            Processing...
+                          </>
+                        ) : (
+                          'Mint 1 Token'
+                        )}
+                      </button>
+                    )}
                   </div>
                 </div>
               </div>
-            )}
 
-            <div>
-              <h2 className="text-lg font-semibold mb-4">Transaction History</h2>
+              {/* Transfer Card - Made taller */}
+              {tokenMint && (
+                <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm h-full">
+                  <h2 className="text-xl font-semibold mb-4 text-gray-800 flex items-center">
+                    <span className="w-3 h-3 bg-amber-500 rounded-full mr-2"></span>
+                    Transfer Tokens
+                  </h2>
+                  <div className="space-y-4 h-[calc(100%-3rem)] flex flex-col justify-between">
+                    <div className="space-y-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Recipient Address
+                        </label>
+                        <input
+                          type="text"
+                          value={recipientAddress}
+                          onChange={(e) => setRecipientAddress(e.target.value)}
+                          placeholder="Enter wallet address"
+                          className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Amount to Send
+                        </label>
+                        <div className="relative">
+                          <input
+                            type="number"
+                            value={transferAmount}
+                            onChange={(e) => setTransferAmount(e.target.value)}
+                            placeholder="0.00"
+                            min="0"
+                            step="0.000000001"
+                            className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                          />
+                          <span className="absolute right-3 top-3 text-gray-500">
+                            Tokens
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                    <button
+                      onClick={transferTokens}
+                      disabled={isLoading || !transferAmount || !recipientAddress}
+                      className={`w-full py-3 px-4 rounded-xl font-medium transition-all ${
+                        isLoading || !transferAmount || !recipientAddress
+                          ? 'bg-gray-300 text-gray-600 cursor-not-allowed'
+                          : 'bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 text-white shadow-md hover:shadow-lg'
+                      }`}
+                    >
+                      {isLoading ? (
+                        <span className="flex items-center justify-center">
+                          <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                          </svg>
+                          Processing...
+                        </span>
+                      ) : (
+                        'Send Tokens'
+                      )}
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Transaction History - Made taller */}
+            <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm flex-1">
+              <h2 className="text-xl font-semibold mb-4 text-gray-800 flex items-center">
+                <span className="w-3 h-3 bg-purple-500 rounded-full mr-2"></span>
+                Transaction History
+              </h2>
               {transactionHistory.length > 0 ? (
-                <div className="overflow-x-auto">
+                <div className="overflow-x-auto h-[calc(100%-3rem)]">
                   <table className="min-w-full divide-y divide-gray-200">
                     <thead className="bg-gray-50">
                       <tr>
-                        <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Type</th>
-                        <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Amount</th>
-                        <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Recipient</th>
-                        <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Time</th>
-                        <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
-                        <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Link</th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Recipient</th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Time</th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Link</th>
                       </tr>
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-200">
                       {transactionHistory.map((tx, index) => (
-                        <tr key={index}>
-                          <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900">{tx.type}</td>
-                          <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-500">
+                        <tr key={index} className="hover:bg-gray-50">
+                          <td className="px-4 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                            {tx.type}
+                          </td>
+                          <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500">
                             {tx.amount ? tx.amount.toFixed(6) : '-'}
                           </td>
-                          <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-500">
-                            {tx.recipient ? `${tx.recipient.slice(0, 4)}...${tx.recipient.slice(-4)}` : '-'}
+                          <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {tx.recipient ? (
+                              <span className="font-mono">
+                                {tx.recipient.slice(0, 4)}...{tx.recipient.slice(-4)}
+                              </span>
+                            ) : '-'}
                           </td>
-                          <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-500">
-                            {tx.timestamp.toLocaleTimeString()}
+                          <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {tx.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                           </td>
-                          <td className="px-4 py-2 whitespace-nowrap text-sm">
-                            <span className={`px-2 py-1 rounded-full text-xs ${
-                              tx.status === 'confirmed' ? 'bg-green-100 text-green-800' :
-                              tx.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
-                              'bg-red-100 text-red-800'
+                          <td className="px-4 py-4 whitespace-nowrap text-sm">
+                            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                              tx.status === 'confirmed' 
+                                ? 'bg-green-100 text-green-800'
+                                : tx.status === 'pending'
+                                ? 'bg-yellow-100 text-yellow-800'
+                                : 'bg-red-100 text-red-800'
                             }`}>
-                              {tx.status}
+                              {tx.status.charAt(0).toUpperCase() + tx.status.slice(1)}
                             </span>
                           </td>
-                          <td className="px-4 py-2 whitespace-nowrap text-sm text-blue-600">
-                            <a 
-                              href={`https://explorer.solana.com/tx/${tx.signature}?cluster=devnet`} 
-                              target="_blank" 
+                          <td className="px-4 py-4 whitespace-nowrap text-sm font-medium">
+                            <a
+                              href={`https://explorer.solana.com/tx/${tx.signature}?cluster=devnet`}
+                              target="_blank"
                               rel="noopener noreferrer"
-                              className="hover:underline"
+                              className="text-blue-600 hover:text-blue-900 hover:underline"
                             >
                               View
                             </a>
@@ -449,13 +570,54 @@ export const WalletConnection: React.FC = () => {
                   </table>
                 </div>
               ) : (
-                <p className="text-gray-500">No transactions yet</p>
+                <div className="text-center py-12">
+                  <svg
+                    className="mx-auto h-16 w-16 text-gray-400"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    aria-hidden="true"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                    />
+                  </svg>
+                  <h3 className="mt-4 text-lg font-medium text-gray-900">No transactions</h3>
+                  <p className="mt-2 text-gray-500">
+                    Get started by creating or minting tokens.
+                  </p>
+                </div>
               )}
             </div>
-          </>
+          </div>
         ) : (
-          <div className="text-center py-8">
-            <p className="text-gray-600 mb-4">Please connect your wallet to continue</p>
+          <div className="flex-1 flex items-center justify-center p-6">
+            <div className="text-center max-w-md">
+              <svg
+                className="mx-auto h-16 w-16 text-gray-400"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                aria-hidden="true"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={1.5}
+                  d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
+                />
+              </svg>
+              <h3 className="mt-6 text-xl font-medium text-gray-900">Connect your wallet</h3>
+              <p className="mt-3 text-gray-500">
+                Please connect your Solana wallet to manage tokens.
+              </p>
+              <div className="mt-8">
+                <WalletMultiButton className="!bg-gradient-to-r !from-blue-600 !to-purple-600 hover:!from-blue-700 hover:!to-purple-700 !text-white !font-medium !py-3 !px-6 !rounded-xl !transition-all !text-base" />
+              </div>
+            </div>
           </div>
         )}
       </div>
