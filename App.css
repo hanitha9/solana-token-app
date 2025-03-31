@@ -1,0 +1,14 @@
+/* Add these to your existing Tailwind imports */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Smooth transitions for interactive elements */
+button, input, select {
+  @apply transition-all duration-200;
+}
+
+/* Prevent layout shift when toast appears */
+.Toastify__toast-container {
+  @apply !w-auto !max-w-full;
+}
