@@ -145,6 +145,10 @@ npm install -g vercel
 vercel
 ```
 Here is the link where you check it out my live demo: https://vercel.com/hanitha-ganisettis-projects/solana-token-app/3RPUo7hfMYthQeusbUVGZt4XVZWK
+
+here is the screenshot of that demo:
+![Screenshot_31-3-2025_183355_solana-token-ngxy3pobe-hanitha-ganisettis-projects vercel app](https://github.com/user-attachments/assets/f5401570-8312-4b9f-83b4-d29bef3ad8f8)
+
 ## 📚 Learning Resources
 - [Solana Cookbook](https://solanacookbook.com/)
 - [SPL Token Docs](https://spl.solana.com/)
