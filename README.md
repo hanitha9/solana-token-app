@@ -150,6 +150,4 @@ vercel
 - [SPL Token Docs](https://spl.solana.com/)
 - [Wallet Adapter Docs](https://github.com/solana-labs/wallet-adapter)
 
-## 📝 License
-MIT © 2025 [Your Name]
 
