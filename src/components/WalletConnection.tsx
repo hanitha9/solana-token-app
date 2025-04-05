@@ -34,6 +34,7 @@ export const WalletConnection: React.FC = () => {
   const [tokenBalance, setTokenBalance] = useState<number>(0);
   const [recipientAddress, setRecipientAddress] = useState<string>('');
   const [transferAmount, setTransferAmount] = useState<string>('');
+  const [mintAmount, setMintAmount] = useState<string>(''); // New state for mint amount
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [transactionHistory, setTransactionHistory] = useState<TransactionHistory[]>([]);
 
@@ -164,6 +165,12 @@ export const WalletConnection: React.FC = () => {
       return;
     }
 
+    const amount = parseFloat(mintAmount);
+    if (isNaN(amount) || amount <= 0) {
+      toast.error('Please enter a valid amount greater than 0');
+      return;
+    }
+
     setIsLoading(true);
     try {
       const transaction = new Transaction().add(
@@ -171,7 +178,7 @@ export const WalletConnection: React.FC = () => {
           tokenMint,
           tokenAccount,
           publicKey,
-          1000000000
+          BigInt(Math.floor(amount * 1e9)) // Convert to lamports
         )
       );
 
@@ -186,7 +193,7 @@ export const WalletConnection: React.FC = () => {
         type: 'Token Mint',
         signature,
         timestamp: new Date(),
-        amount: 1,
+        amount: amount,
         status: 'pending'
       }]);
 
@@ -199,7 +206,8 @@ export const WalletConnection: React.FC = () => {
         )
       );
 
-      toast.success('Successfully minted 1 token!');
+      toast.success(`Successfully minted ${amount} tokens!`);
+      setMintAmount(''); // Reset mint amount after successful minting
     } catch (error) {
       toast.error(`Failed to mint tokens: ${error instanceof Error ? error.message : String(error)}`);
       setTransactionHistory(prev => 
@@ -325,7 +333,6 @@ export const WalletConnection: React.FC = () => {
       />
       
       <div className="min-h-[calc(100vh-2rem)] mx-auto bg-white/90 backdrop-blur-sm rounded-2xl shadow-xl overflow-hidden flex flex-col">
-        {/* Header with glass effect */}
         <div className="bg-gradient-to-r from-blue-600 to-purple-600 p-6 text-white">
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center">
             <div>
@@ -345,9 +352,7 @@ export const WalletConnection: React.FC = () => {
 
         {publicKey ? (
           <div className="flex-1 p-6 space-y-6 overflow-auto">
-            {/* Wallet Info and Token Actions */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              {/* Wallet Info Card - Made taller */}
               <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm h-full">
                 <h2 className="text-xl font-semibold mb-4 text-gray-800 flex items-center">
                   <span className="w-3 h-3 bg-green-500 rounded-full mr-2"></span>
@@ -381,7 +386,6 @@ export const WalletConnection: React.FC = () => {
                 </div>
               </div>
 
-              {/* Token Actions Card - Made taller */}
               <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm h-full">
                 <h2 className="text-xl font-semibold mb-4 text-gray-800 flex items-center">
                   <span className="w-3 h-3 bg-blue-500 rounded-full mr-2"></span>
@@ -412,33 +416,53 @@ export const WalletConnection: React.FC = () => {
                     </button>
                     
                     {tokenMint && (
-                      <button
-                        onClick={mintTokens}
-                        disabled={isLoading}
-                        className={`w-full py-3 px-4 rounded-xl font-medium transition-all flex items-center justify-center ${
-                          isLoading
-                            ? 'bg-gray-300 text-gray-600'
-                            : 'bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white shadow-md hover:shadow-lg'
-                        }`}
-                      >
-                        {isLoading ? (
-                          <>
-                            <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                            </svg>
-                            Processing...
-                          </>
-                        ) : (
-                          'Mint 1 Token'
-                        )}
-                      </button>
+                      <div className="space-y-4">
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                            Amount to Mint
+                          </label>
+                          <div className="relative">
+                            <input
+                              type="number"
+                              value={mintAmount}
+                              onChange={(e) => setMintAmount(e.target.value)}
+                              placeholder="0.00"
+                              min="0"
+                              step="0.000000001"
+                              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+                            />
+                            <span className="absolute right-3 top-3 text-gray-500">
+                              Tokens
+                            </span>
+                          </div>
+                        </div>
+                        <button
+                          onClick={mintTokens}
+                          disabled={isLoading || !mintAmount}
+                          className={`w-full py-3 px-4 rounded-xl font-medium transition-all flex items-center justify-center ${
+                            isLoading || !mintAmount
+                              ? 'bg-gray-300 text-gray-600'
+                              : 'bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white shadow-md hover:shadow-lg'
+                          }`}
+                        >
+                          {isLoading ? (
+                            <>
+                              <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                              </svg>
+                              Processing...
+                            </>
+                          ) : (
+                            'Mint Tokens'
+                          )}
+                        </button>
+                      </div>
                     )}
                   </div>
                 </div>
               </div>
 
-              {/* Transfer Card - Made taller */}
               {tokenMint && (
                 <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm h-full">
                   <h2 className="text-xl font-semibold mb-4 text-gray-800 flex items-center">
@@ -505,7 +529,6 @@ export const WalletConnection: React.FC = () => {
               )}
             </div>
 
-            {/* Transaction History - Made taller */}
             <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm flex-1">
               <h2 className="text-xl font-semibold mb-4 text-gray-800 flex items-center">
                 <span className="w-3 h-3 bg-purple-500 rounded-full mr-2"></span>
