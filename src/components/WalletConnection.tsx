@@ -12,7 +12,7 @@ import {
   createMintToInstruction,
   getAccount,
   createTransferInstruction,
-} from '@solana/spl-token';
+} from '@solana/s DiagnosticsPL-token';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
@@ -34,7 +34,7 @@ export const WalletConnection: React.FC = () => {
   const [tokenBalance, setTokenBalance] = useState<number>(0);
   const [recipientAddress, setRecipientAddress] = useState<string>('');
   const [transferAmount, setTransferAmount] = useState<string>('');
-  const [mintAmount, setMintAmount] = useState<string>(''); // New state for mint amount
+  const [mintAmount, setMintAmount] = useState<string>(''); // Added for user-specified mint amount
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [transactionHistory, setTransactionHistory] = useState<TransactionHistory[]>([]);
 
@@ -178,7 +178,7 @@ export const WalletConnection: React.FC = () => {
           tokenMint,
           tokenAccount,
           publicKey,
-          BigInt(Math.floor(amount * 1e9)) // Convert to lamports
+          BigInt(Math.floor(amount * 1e9)) // Uses user-specified amount
         )
       );
 
@@ -207,7 +207,7 @@ export const WalletConnection: React.FC = () => {
       );
 
       toast.success(`Successfully minted ${amount} tokens!`);
-      setMintAmount(''); // Reset mint amount after successful minting
+      setMintAmount(''); // Reset input field
     } catch (error) {
       toast.error(`Failed to mint tokens: ${error instanceof Error ? error.message : String(error)}`);
       setTransactionHistory(prev => 
