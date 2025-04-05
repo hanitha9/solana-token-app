@@ -222,7 +222,13 @@ export const WalletConnection: React.FC = () => {
         draggable
         pauseOnHover
         theme="dark"
-        toastStyle={{ borderRadius: '12px', background: 'rgba(255, 255, 255, 0.1)', backdropFilter: 'blur(10px)', color: '#fff' }}
+        toastStyle={{ 
+          borderRadius: '12px', 
+          background: 'rgba(17, 24, 39, 0.9)', // Darker gray background for contrast
+          backdropFilter: 'blur(10px)', 
+          color: '#ffffff', // White text for visibility
+          border: '1px solid rgba(255, 255, 255, 0.1)' 
+        }}
       />
 
       {/* Sidebar */}
@@ -248,44 +254,44 @@ export const WalletConnection: React.FC = () => {
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 p-6 overflow-y-auto">
+      <div className="flex-1 overflow-y-auto">
         {!publicKey ? (
-          <div className="h-full flex items-center justify-center">
-            <div className="bg-gray-800/50 backdrop-blur-lg rounded-2xl p-8 shadow-xl border border-gray-700/20 text-center animate-fade-in">
+          <div className="h-full flex items-center justify-center p-6">
+            <div className="bg-gray-800/50 backdrop-blur-lg rounded-2xl p-8 shadow-xl border border-gray-700/20 animate-fade-in w-full max-w-md">
               <svg className="mx-auto h-20 w-20 text-white/50" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
               </svg>
-              <h3 className="mt-6 text-2xl font-bold text-white">Connect Your Wallet</h3>
-              <p className="mt-3 text-white/70">Link your Solana wallet to start managing tokens.</p>
-              <div className="mt-8">
+              <h3 className="mt-6 text-2xl font-bold text-white text-center">Connect Your Wallet</h3>
+              <p className="mt-3 text-white/70 text-center">Link your Solana wallet to start managing tokens.</p>
+              <div className="mt-8 flex justify-center">
                 <WalletMultiButton className="!bg-gradient-to-r !from-indigo-600 !to-purple-600 hover:!from-indigo-700 hover:!to-purple-700 !text-white !font-semibold !py-3 !px-8 !rounded-full !transition-all !shadow-md hover:!shadow-lg" />
               </div>
             </div>
           </div>
         ) : (
-          <div className="max-w-5xl mx-auto">
+          <div className="h-full w-full p-6">
             {activeTab === 'overview' && (
-              <div className="bg-gray-800/50 backdrop-blur-lg rounded-2xl p-6 shadow-xl border border-gray-700/20 animate-slide-up">
-                <h2 className="text-2xl font-bold text-white mb-6">Wallet Overview</h2>
-                <div className="space-y-6 text-white">
-                  <div>
+              <div className="h-full bg-gray-800/50 backdrop-blur-lg rounded-2xl p-6 shadow-xl border border-gray-700/20 animate-slide-up">
+                <h2 className="text-2xl md:text-3xl font-bold text-white mb-6">Wallet Overview</h2>
+                <div className="space-y-6 text-white h-[calc(100%-3rem)] flex flex-col">
+                  <div className="flex-1">
                     <p className="text-sm opacity-70">Wallet Address</p>
                     <p className="font-mono text-sm bg-gray-900/50 p-3 rounded-lg mt-1 break-all">{publicKey.toBase58()}</p>
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="p-4 bg-gray-900/30 rounded-lg">
                       <p className="text-sm opacity-70">SOL Balance</p>
-                      <p className="text-xl font-semibold mt-1">{solBalance.toFixed(6)} SOL</p>
+                      <p className="text-xl md:text-2xl font-semibold mt-1">{solBalance.toFixed(6)} SOL</p>
                     </div>
                     {tokenMint && (
                       <div className="p-4 bg-gray-900/30 rounded-lg">
                         <p className="text-sm opacity-70">Token Balance</p>
-                        <p className="text-xl font-semibold mt-1">{tokenBalance.toFixed(6)}</p>
+                        <p className="text-xl md:text-2xl font-semibold mt-1">{tokenBalance.toFixed(6)}</p>
                       </div>
                     )}
                   </div>
                   {tokenMint && (
-                    <div>
+                    <div className="flex-1">
                       <p className="text-sm opacity-70">Token Mint</p>
                       <p className="font-mono text-sm bg-gray-900/50 p-3 rounded-lg mt-1 break-all">{tokenMint.toBase58()}</p>
                     </div>
@@ -295,9 +301,9 @@ export const WalletConnection: React.FC = () => {
             )}
 
             {activeTab === 'studio' && (
-              <div className="bg-gray-800/50 backdrop-blur-lg rounded-2xl p-6 shadow-xl border border-gray-700/20 animate-scale-in">
-                <h2 className="text-2xl font-bold text-white mb-6">Token Studio</h2>
-                <div className="space-y-6">
+              <div className="h-full bg-gray-800/50 backdrop-blur-lg rounded-2xl p-6 shadow-xl border border-gray-700/20 animate-scale-in">
+                <h2 className="text-2xl md:text-3xl font-bold text-white mb-6">Token Studio</h2>
+                <div className="space-y-6 h-[calc(100%-3rem)] flex flex-col justify-center max-w-lg mx-auto w-full">
                   <button
                     onClick={createToken}
                     disabled={isLoading}
@@ -360,9 +366,9 @@ export const WalletConnection: React.FC = () => {
             )}
 
             {activeTab === 'transfer' && tokenMint && (
-              <div className="bg-gray-800/50 backdrop-blur-lg rounded-2xl p-6 shadow-xl border border-gray-700/20 animate-slide-left">
-                <h2 className="text-2xl font-bold text-white mb-6">Transfer Tokens</h2>
-                <div className="space-y-6">
+              <div className="h-full bg-gray-800/50 backdrop-blur-lg rounded-2xl p-6 shadow-xl border border-gray-700/20 animate-slide-left">
+                <h2 className="text-2xl md:text-3xl font-bold text-white mb-6">Transfer Tokens</h2>
+                <div className="space-y-6 h-[calc(100%-3rem)] flex flex-col justify-center max-w-lg mx-auto w-full">
                   <div>
                     <label className="block text-sm font-medium text-white/80 mb-1">Recipient Address</label>
                     <input
@@ -370,7 +376,7 @@ export const WalletConnection: React.FC = () => {
                       value={recipientAddress}
                       onChange={(e) => setRecipientAddress(e.target.value)}
                       placeholder="Enter wallet address"
-                      className="w-full p-3 bg-gray-900/50 border border-gray-700/50 rounded-lg text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+                      className="w-full p-3 bg-gray-900/50 border border-gray-700/50 rounded-lg text-white placeholder-white gels/50 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
                     />
                   </div>
                   <div>
@@ -412,54 +418,58 @@ export const WalletConnection: React.FC = () => {
             )}
 
             {activeTab === 'history' && (
-              <div className="bg-gray-800/50 backdrop-blur-lg rounded-2xl p-6 shadow-xl border border-gray-700/20 animate-fade-in">
-                <h2 className="text-2xl font-bold text-white mb-6">Transaction History</h2>
-                {transactionHistory.length > 0 ? (
-                  <div className="overflow-x-auto">
-                    <table className="w-full text-white">
-                      <thead>
-                        <tr className="text-left text-sm opacity-70 border-b border-gray-700/50">
-                          <th className="py-3 px-4">Type</th>
-                          <th className="py-3 px-4">Amount</th>
-                          <th className="py-3 px-4">Recipient</th>
-                          <th className="py-3 px-4">Time</th>
-                          <th className="py-3 px-4">Status</th>
-                          <th className="py-3 px-4">Link</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {transactionHistory.map((tx, index) => (
-                          <tr key={index} className="hover:bg-gray-700/30 transition-all duration-200">
-                            <td className="py-3 px-4">{tx.type}</td>
-                            <td className="py-3 px-4">{tx.amount ? tx.amount.toFixed(6) : '-'}</td>
-                            <td className="py-3 px-4 font-mono">{tx.recipient ? `${tx.recipient.slice(0, 4)}...${tx.recipient.slice(-4)}` : '-'}</td>
-                            <td className="py-3 px-4">{tx.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</td>
-                            <td className="py-3 px-4">
-                              <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                                tx.status === 'confirmed' ? 'bg-green-500/20 text-green-300' : tx.status === 'pending' ? 'bg-yellow-500/20 text-yellow-300' : 'bg-red-500/20 text-red-300'
-                              }`}>
-                                {tx.status.charAt(0).toUpperCase() + tx.status.slice(1)}
-                              </span>
-                            </td>
-                            <td className="py-3 px-4">
-                              <a href={`https://explorer.solana.com/tx/${tx.signature}?cluster=devnet`} target="_blank" rel="noopener noreferrer" className="text-indigo-400 hover:text-indigo-300 transition-colors">
-                                View
-                              </a>
-                            </td>
+              <div className="h-full bg-gray-800/50 backdrop-blur-lg rounded-2xl p-6 shadow-xl border border-gray-700/20 animate-fade-in">
+                <h2 className="text-2xl md:text-3xl font-bold text-white mb-6">Transaction History</h2>
+                <div className="h-[calc(100%-3rem)] overflow-y-auto">
+                  {transactionHistory.length > 0 ? (
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-white">
+                        <thead className="sticky top-0 bg-gray-800/70">
+                          <tr className="text-left text-sm opacity-70 border-b border-gray-700/50">
+                            <th className="py-3 px-4">Type</th>
+                            <th className="py-3 px-4">Amount</th>
+                            <th className="py-3 px-4">Recipient</th>
+                            <th className="py-3 px-4">Time</th>
+                            <th className="py-3 px-4">Status</th>
+                            <th className="py-3 px-4">Link</th>
                           </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                ) : (
-                  <div className="text-center py-12">
-                    <svg className="mx-auto h-20 w-20 text-white/50" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                    </svg>
-                    <h3 className="mt-4 text-xl font-bold text-white">No Transactions Yet</h3>
-                    <p className="mt-2 text-white/70">Start by creating or minting some tokens!</p>
-                  </div>
-                )}
+                        </thead>
+                        <tbody>
+                          {transactionHistory.map((tx, index) => (
+                            <tr key={index} className="hover:bg-gray-700/30 transition-all duration-200">
+                              <td className="py-3 px-4">{tx.type}</td>
+                              <td className="py-3 px-4">{tx.amount ? tx.amount.toFixed(6) : '-'}</td>
+                              <td className="py-3 px-4 font-mono">{tx.recipient ? `${tx.recipient.slice(0, 4)}...${tx.recipient.slice(-4)}` : '-'}</td>
+                              <td className="py-3 px-4">{tx.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</td>
+                              <td className="py-3 px-4">
+                                <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                                  tx.status === 'confirmed' ? 'bg-green-500/20 text-green-300' : tx.status === 'pending' ? 'bg-yellow-500/20 text-yellow-300' : 'bg-red-500/20 text-red-300'
+                                }`}>
+                                  {tx.status.charAt(0).toUpperCase() + tx.status.slice(1)}
+                                </span>
+                              </td>
+                              <td className="py-3 px-4">
+                                <a href={`https://explorer.solana.com/tx/${tx.signature}?cluster=devnet`} target="_blank" rel="noopener noreferrer" className="text-indigo-400 hover:text-indigo-300 transition-colors">
+                                  View
+                                </a>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  ) : (
+                    <div className="h-full flex items-center justify-center">
+                      <div className="text-center">
+                        <svg className="mx-auto h-20 w-20 text-white/50" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                        </svg>
+                        <h3 className="mt-4 text-xl font-bold text-white">No Transactions Yet</h3>
+                        <p className="mt-2 text-white/70">Start by creating or minting some tokens!</p>
+                      </div>
+                    </div>
+                  )}
+                </div>
               </div>
             )}
           </div>
@@ -491,7 +501,7 @@ export const WalletConnection: React.FC = () => {
         @keyframes slideLeft {
           from { transform: translateX(20px); opacity: 0; }
           to { transform: translateX(0); opacity: 1; }
-        }
+       /CodeSnip>
         @keyframes scaleIn {
           from { transform: scale(0.95); opacity: 0; }
           to { transform: scale(1); opacity: 1; }
