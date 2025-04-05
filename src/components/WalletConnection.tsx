@@ -12,7 +12,7 @@ import {
   createMintToInstruction,
   getAccount,
   createTransferInstruction,
-} from '@solana/spl-token'; // Corrected import
+} from '@solana/spl-token';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
@@ -28,7 +28,7 @@ interface TransactionHistory {
 export const WalletConnection: React.FC = () => {
   const { connection } = useConnection();
   const { publicKey, signTransaction } = useWallet();
-  const [solBalance, set-solBalance] = useState<number>(0);
+  const [solBalance, setSolBalance] = useState<number>(0);
   const [tokenMint, setTokenMint] = useState<PublicKey | null>(null);
   const [tokenAccount, setTokenAccount] = useState<PublicKey | null>(null);
   const [tokenBalance, setTokenBalance] = useState<number>(0);
