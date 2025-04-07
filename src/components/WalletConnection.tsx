@@ -43,6 +43,8 @@ export const WalletConnection: React.FC = () => {
   const [recipientAddress, setRecipientAddress] = useState<string>('');
   const [transferAmount, setTransferAmount] = useState<string>('');
   const [mintAmount, setMintAmount] = useState<string>(''); // User-specified mint amount
+  const [tokenName, setTokenName] = useState<string>(''); // New: Token name
+  const [tokenSymbol, setTokenSymbol] = useState<string>(''); // New: Token symbol
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [transactionHistory, setTransactionHistory] = useState<TransactionHistory[]>([]);
 
@@ -77,8 +79,8 @@ export const WalletConnection: React.FC = () => {
   }, [fetchTokenBalance]);
 
   const createToken = async () => {
-    if (!publicKey || !signTransaction) {
-      toast.error('Wallet not connected');
+    if (!publicKey || !signTransaction || !tokenName || !tokenSymbol) {
+      toast.error('Wallet not connected or token name/symbol missing');
       return;
     }
     setIsLoading(true);
@@ -86,6 +88,7 @@ export const WalletConnection: React.FC = () => {
       const mintKeypair = Keypair.generate();
       const lamports = await getMinimumBalanceForRentExemptMint(connection);
       const { blockhash: recentBlockhash } = await connection.getLatestBlockhash();
+
       const transaction = new Transaction().add(
         SystemProgram.createAccount({
           fromPubkey: publicKey,
@@ -109,6 +112,7 @@ export const WalletConnection: React.FC = () => {
       const signature = await connection.sendRawTransaction(signed.serialize());
       setTransactionHistory(prev => [...prev, { type: 'Token Creation', signature, timestamp: new Date(), status: 'pending' }]);
       await connection.confirmTransaction(signature, 'confirmed');
+
       const ata = await getAssociatedTokenAddress(mintKeypair.publicKey, publicKey);
       const { blockhash: ataBlockhash } = await connection.getLatestBlockhash();
       const ataTransaction = new Transaction().add(
@@ -119,11 +123,25 @@ export const WalletConnection: React.FC = () => {
       const signedAta = await signTransaction(ataTransaction);
       const ataSignature = await connection.sendRawTransaction(signedAta.serialize());
       await connection.confirmTransaction(ataSignature, 'confirmed');
+
+      const { mpl } = await import('@metaplex-foundation/js');
+      const metaplex = mpl.Metaplex.make(connection);
+      const { txSignature } = await metaplex.nfts().createMetadata({
+        mintAddress: mintKeypair.publicKey,
+        uri: 'https://example.com/metadata.json', // Replace with IPFS URI in production
+        name: tokenName,
+        symbol: tokenSymbol,
+        sellerFeeBasisPoints: 0,
+      });
+      await connection.confirmTransaction(txSignature, 'confirmed');
+
       setTokenMint(mintKeypair.publicKey);
       setTokenAccount(ata);
       await fetchTokenBalance();
       setTransactionHistory(prev => prev.map(tx => tx.signature === signature ? { ...tx, status: 'confirmed' } : tx));
-      toast.success('Token created successfully!');
+      setTokenName('');
+      setTokenSymbol('');
+      toast.success('Token created successfully with metadata!');
     } catch (error) {
       toast.error(`Token creation failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
       setTransactionHistory(prev => prev.map(tx => tx.type === 'Token Creation' ? { ...tx, status: 'failed' } : tx));
@@ -310,9 +328,9 @@ export const WalletConnection: React.FC = () => {
                   <div className="space-y-6 h-[calc(100%-3rem)] flex flex-col justify-center">
                     <button
                       onClick={createToken}
-                      disabled={isLoading}
+                      disabled={isLoading || !tokenName || !tokenSymbol}
                       className={`w-full py-3 px-4 rounded-full font-semibold text-white transition-all duration-300 ${
-                        isLoading ? 'bg-gray-600/50 cursor-not-allowed' : 'bg-gradient-to-r from-green-500 to-teal-500 hover:from-green-600 hover:to-teal-600 shadow-md hover:shadow-lg'
+                        isLoading || !tokenName || !tokenSymbol ? 'bg-gray-600/50 cursor-not-allowed' : 'bg-gradient-to-r from-green-500 to-teal-500 hover:from-green-600 hover:to-teal-600 shadow-md hover:shadow-lg'
                       }`}
                     >
                       {isLoading ? (
@@ -363,6 +381,30 @@ export const WalletConnection: React.FC = () => {
                             'Mint Tokens'
                           )}
                         </button>
+                      </div>
+                    )}
+                    {!tokenMint && (
+                      <div className="space-y-4">
+                        <div>
+                          <label className="block text-sm font-medium text-white/80 mb-1">Token Name</label>
+                          <input
+                            type="text"
+                            value={tokenName}
+                            onChange={(e) => setTokenName(e.target.value)}
+                            placeholder="Enter token name"
+                            className="w-full p-3 bg-gray-900/50 border border-gray-700/50 rounded-lg text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-white/80 mb-1">Token Symbol</label>
+                          <input
+                            type="text"
+                            value={tokenSymbol}
+                            onChange={(e) => setTokenSymbol(e.target.value)}
+                            placeholder="Enter token symbol (e.g., FARM)"
+                            className="w-full p-3 bg-gray-900/50 border border-gray-700/50 rounded-lg text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all"
+                          />
+                        </div>
                       </div>
                     )}
                   </div>
