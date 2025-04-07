@@ -229,7 +229,7 @@ export const WalletConnection: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen min-w-screen bg-gradient-to-br from-gray-900 via-indigo-900 to-purple-900 flex flex-col overflow-hidden">
+    <div className="min-h-screen w-screen bg-gradient-to-br from-gray-900 via-indigo-900 to-purple-900 flex flex-col overflow-hidden">
       <ToastContainer 
         position="top-right"
         autoClose={5000}
