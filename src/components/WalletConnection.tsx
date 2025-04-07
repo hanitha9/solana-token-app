@@ -42,9 +42,9 @@ export const WalletConnection: React.FC = () => {
   const [tokenBalance, setTokenBalance] = useState<number>(0);
   const [recipientAddress, setRecipientAddress] = useState<string>('');
   const [transferAmount, setTransferAmount] = useState<string>('');
-  const [mintAmount, setMintAmount] = useState<string>(''); // User-specified mint amount
-  const [tokenName, setTokenName] = useState<string>(''); // New: Token name
-  const [tokenSymbol, setTokenSymbol] = useState<string>(''); // New: Token symbol
+  const [mintAmount, setMintAmount] = useState<string>('');
+  const [tokenName, setTokenName] = useState<string>('');
+  const [tokenSymbol, setTokenSymbol] = useState<string>('');
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [transactionHistory, setTransactionHistory] = useState<TransactionHistory[]>([]);
 
@@ -124,16 +124,21 @@ export const WalletConnection: React.FC = () => {
       const ataSignature = await connection.sendRawTransaction(signedAta.serialize());
       await connection.confirmTransaction(ataSignature, 'confirmed');
 
-      const { mpl } = await import('@metaplex-foundation/js');
-      const metaplex = mpl.Metaplex.make(connection);
-      const { txSignature } = await metaplex.nfts().createMetadata({
-        mintAddress: mintKeypair.publicKey,
-        uri: 'https://example.com/metadata.json', // Replace with IPFS URI in production
-        name: tokenName,
-        symbol: tokenSymbol,
-        sellerFeeBasisPoints: 0,
-      });
-      await connection.confirmTransaction(txSignature, 'confirmed');
+      try {
+        const { Metaplex } = await import('@metaplex-foundation/js');
+        const metaplex = Metaplex.make(connection);
+        const { response } = await metaplex.nfts().create({
+          uri: 'https://example.com/metadata.json', // Replace with real URI in production
+          name: tokenName,
+          symbol: tokenSymbol,
+          sellerFeeBasisPoints: 0,
+          useNewMint: mintKeypair,
+        });
+        await connection.confirmTransaction(response.signature, 'confirmed');
+      } catch (metaError) {
+        console.error('Metaplex metadata creation failed:', metaError);
+        toast.warn('Token created, but metadata failed. Check console for details.');
+      }
 
       setTokenMint(mintKeypair.publicKey);
       setTokenAccount(ata);
@@ -141,7 +146,7 @@ export const WalletConnection: React.FC = () => {
       setTransactionHistory(prev => prev.map(tx => tx.signature === signature ? { ...tx, status: 'confirmed' } : tx));
       setTokenName('');
       setTokenSymbol('');
-      toast.success('Token created successfully with metadata!');
+      toast.success('Token created successfully!');
     } catch (error) {
       toast.error(`Token creation failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
       setTransactionHistory(prev => prev.map(tx => tx.type === 'Token Creation' ? { ...tx, status: 'failed' } : tx));
